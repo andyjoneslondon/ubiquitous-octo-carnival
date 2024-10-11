@@ -1,3 +1,6 @@
+// app.js
+
+// Register the service worker (this part stays the same)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -5,6 +8,8 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('Service Worker Error', err));
   });
 }
+
+// AI-powered chatbot functionality (append this code)
 document.getElementById('send-btn').addEventListener('click', () => {
   const userInput = document.getElementById('user-input').value;
   if (userInput) {

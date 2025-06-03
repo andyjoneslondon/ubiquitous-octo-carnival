@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 
@@ -13,13 +13,12 @@ CORS(app)
 def process_text():
     try:
         data = request.get_json()
-        print("Received:", data)
-
         text = data.get('text')
         if not text:
             return jsonify({'error': 'No text provided'}), 400
 
-        # Step 1: Ask GPT to extract structured intent
+        print("Received:", data)
+
         reply_json = get_gpt_reply(text)
         print("GPT raw reply:", reply_json)
 
@@ -31,7 +30,6 @@ def process_text():
             print("❌ Failed to parse GPT response:", e)
             return jsonify({'error': 'Invalid GPT format'}), 500
 
-        # Step 2: Act based on intent
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
@@ -42,8 +40,13 @@ def process_text():
         else:
             final_reply = "Sorry, I couldn't understand your request."
 
-        # Step 3: Text-to-speech
+        # Generate spoken response
         audio_filename = generate_tts(final_reply)
+        if not audio_filename:
+            print("❌ TTS failed.")
+            return jsonify({'reply': final_reply, 'audio_url': None})
+
+        print("Audio filename:", audio_filename)
         audio_url = f"/audio/{audio_filename}"
 
         return jsonify({'reply': final_reply, 'audio_url': audio_url})
@@ -53,8 +56,7 @@ def process_text():
 
 @app.route('/audio/<filename>')
 def serve_audio(filename):
-    return app.send_from_directory("static/audio", filename)
-
+    return send_from_directory("static/audio", filename)
 
 if __name__ == '__main__':
     app.run(debug=True)

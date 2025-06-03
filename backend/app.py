@@ -47,7 +47,7 @@ def process_text():
             return jsonify({'reply': final_reply, 'audio_url': None})
 
         print("Audio filename:", audio_filename)
-        audio_url = f"/audio/{audio_filename}"
+        audio_url = f"https://ubiquitous-octo-carnival-backend.onrender.com/audio/{audio_filename}"
 
         return jsonify({'reply': final_reply, 'audio_url': audio_url})
     except Exception as e:

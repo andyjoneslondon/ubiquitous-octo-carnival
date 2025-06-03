@@ -3,12 +3,12 @@ import os
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-system_prompt = 'You are a helpful assistant that processes voice input from taxi drivers about specific locations.\n\nYour goal is to interpret each input and return structured JSON that identifies the user\'s intent and relevant location.\n\nThere are two types of intent:\n- "report": The user is providing information about something happening at a location (e.g., traffic, roadworks, police, accidents, events, disruptions, or local news). Extract the location and a brief summary of what they are reporting.\n- "query": The user is asking for an update or summary of the latest reports at a location. Extract the location only.\n\nAlways respond in JSON format like this:\n{\n  "intent": "report" or "query",\n  "location": "location name",\n  "summary": "short description"  ← only for reports\n}\n\nBe concise and consistent. The location should be a well-known area or landmark. If you\'re unsure, return a best guess based on context.\n'
+system_prompt = 'You are an assistant that receives transcribed voice input from taxi drivers.\n\nYour task is to extract the user\'s intent and location from each input, and return a response ONLY as JSON. There are two possible intents:\n\n- "report": when the driver provides information about something happening at a location (e.g. traffic, police, roadworks, protests, disruptions, events, news). Extract both the location and a short description as the status.\n- "query": when the driver asks for information about a location. Extract only the location.\n\n⚠️ Respond ONLY with raw JSON and NOTHING else — no markdown, no introduction, no explanation.\n\nIf it’s a report:\n{ "intent": "report", "location": "Location Name", "status": "Short summary of what was reported" }\n\nIf it’s a query:\n{ "intent": "query", "location": "Location Name" }\n\nIf the input is unclear, make your best guess based on context.\n'
 
 def get_gpt_reply(text_input):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4-turbo",  # You can change this to "gpt-3.5-turbo" if needed
+            model="gpt-4-turbo",
             messages=[
                 { "role": "system", "content": system_prompt },
                 { "role": "user", "content": text_input }

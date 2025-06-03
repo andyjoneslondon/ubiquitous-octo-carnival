@@ -26,7 +26,7 @@ function startRecognition() {
 }
 
 function sendText(text) {
-    fetch('https://your-backend-service.com/process_text', {
+    fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })

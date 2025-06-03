@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
+import re
 
 from gpt_logic import get_gpt_reply
 from tts import generate_tts
@@ -20,15 +21,21 @@ def process_text():
         print("Received:", data)
 
         reply_json = get_gpt_reply(text)
-        print("GPT raw reply:", reply_json)
+        print("GPT raw reply:", repr(reply_json))
+
+        # Extract just the JSON block from GPT reply
+        json_match = re.search(r"{.*}", reply_json, re.DOTALL)
+        if not json_match:
+            print("❌ Could not find JSON block in GPT reply")
+            return jsonify({'error': 'Invalid GPT format'}), 500
 
         try:
-            parsed = json.loads(reply_json)
+            parsed = json.loads(json_match.group(0))
             intent = parsed['intent']
             location = parsed['location']
         except Exception as e:
-            print("❌ Failed to parse GPT response:", e)
-            return jsonify({'error': 'Invalid GPT format'}), 500
+            print("❌ JSON decode failed:", e)
+            return jsonify({'error': 'Invalid GPT JSON format'}), 500
 
         if intent == "report":
             status = parsed.get('status', 'unknown')

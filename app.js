@@ -38,8 +38,9 @@ function sendText(text) {
         audioPlayer.hidden = false;
         audioPlayer.play();
     })
-    .catch(error => {
-        responseText.textContent = "❌ Failed to get response.";
-        console.error(error);
-    });
+.catch(error => {
+  console.error("Full fetch error:", error);
+  responseText.textContent = "❌ Failed to get response. See console for details.";
+});
+
 }

@@ -7,7 +7,7 @@ from tts import generate_tts
 from db import save_report, get_latest_status
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://ubiquitous-octo-carnival.onrender.com"])
 
 @app.route('/process_text', methods=['POST'])
 def process_text():

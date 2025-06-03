@@ -53,7 +53,8 @@ def process_text():
 
 @app.route('/audio/<filename>')
 def serve_audio(filename):
-    return app.send_static_file(f'audio/{filename}')
+    return app.send_from_directory("static/audio", filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

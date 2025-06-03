@@ -8,16 +8,25 @@ CORS(app)
 
 @app.route('/process_text', methods=['POST'])
 def process_text():
-    data = request.get_json()
-    text = data.get('text')
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
+    try:
+        data = request.get_json()
+        print("Received:", data)
 
-    reply = get_gpt_reply(text)
-    audio_filename = generate_tts(reply)
-    audio_url = f"/audio/{audio_filename}"
+        text = data.get('text')
+        if not text:
+            return jsonify({'error': 'No text provided'}), 400
 
-    return jsonify({'reply': reply, 'audio_url': audio_url})
+        reply = get_gpt_reply(text)
+        print("GPT reply:", reply)
+
+        audio_filename = generate_tts(reply)
+        print("Audio filename:", audio_filename)
+
+        audio_url = f"/audio/{audio_filename}"
+        return jsonify({'reply': reply, 'audio_url': audio_url})
+    except Exception as e:
+        print("❌ ERROR:", e)
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/audio/<filename>')
 def serve_audio(filename):

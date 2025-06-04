@@ -28,9 +28,12 @@ function startRecognition() {
 function sendText(text) {
     fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-    })
+        headers: {
+        'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ text: userInput }),
+  mode: 'cors'
+})
     .then(response => response.json())
     .then(data => {
         responseText.textContent = "🤖 " + data.reply;

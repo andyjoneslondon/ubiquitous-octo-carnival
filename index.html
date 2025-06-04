@@ -1,17 +1,117 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Taxi Voice Assistant</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="/favicon.ico" />
+    <meta charset="UTF-8">
+    <title>Voice Location Reporter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #recordBtn {
+            background-color: crimson;
+            border: none;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        #recordBtn:hover {
+            background-color: #b30000;
+        }
+
+        #recordBtn:active {
+            transform: scale(0.9);
+        }
+
+        #status, #response {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        #audio {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Taxi Voice Assistant</h1>
-    <button onclick="startRecognition()">🎤 Start Speaking</button>
-    <p id="status">Say something like "Is there traffic near King's Cross?"</p>
-    <p id="response"></p>
+    <h1>📍 Voice Location Reporter</h1>
+    <button id="recordBtn">🎙️</button>
+    <div id="status"></div>
+    <div id="response"></div>
     <audio id="audio" controls hidden></audio>
-    <script src="app.js"></script>
+
+    <script>
+        const status = document.getElementById('status');
+        const responseText = document.getElementById('response');
+        const audioPlayer = document.getElementById('audio');
+        const recordBtn = document.getElementById('recordBtn');
+
+        recordBtn.addEventListener('click', startRecognition);
+
+        function startRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                status.textContent = "🎤 Listening...";
+            };
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                status.textContent = `📝 Heard: "${text}"`;
+                sendText(text);
+            };
+
+            recognition.onerror = (event) => {
+                status.textContent = `❌ Error: ${event.error}`;
+            };
+
+            recognition.start();
+        }
+
+        function sendText(userInput) {
+            fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: userInput }),
+                mode: 'cors'
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseText.textContent = "🤖 " + data.reply;
+                if (data.audio_url) {
+                    audioPlayer.src = data.audio_url;
+                    audioPlayer.hidden = false;
+                    audioPlayer.play();
+                } else {
+                    audioPlayer.hidden = true;
+                }
+            })
+            .catch(error => {
+                console.error("Full fetch error:", error);
+                responseText.textContent = "❌ Failed to get response. See console for details.";
+                audioPlayer.hidden = true;
+            });
+        }
+    </script>
 </body>
 </html>

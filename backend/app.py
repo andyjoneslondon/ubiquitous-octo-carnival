@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 import re
 
@@ -8,15 +8,13 @@ from tts import generate_tts
 from db import save_report, get_latest_status
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
-# ✅ CORS configuration
-CORS(app,
-     supports_credentials=True,
-     origins=["https://ubiquitous-octo-carnival.onrender.com"],
-     allow_headers=["Content-Type"],
-     methods=["GET", "POST", "OPTIONS"])
-
-@app.route('/process_text', methods=['POST'])
+@app.route('/process_text', methods=['POST', 'OPTIONS'])
+@cross_origin(origin='https://ubiquitous-octo-carnival.onrender.com',
+              methods=['POST', 'OPTIONS'],
+              headers=['Content-Type'],
+              supports_credentials=True)
 def process_text():
     try:
         data = request.get_json()
@@ -60,6 +58,10 @@ def process_text():
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route("/cors-test", methods=["OPTIONS"])
+@cross_origin(origin='https://ubiquitous-octo-carnival.onrender.com',
+              methods=['OPTIONS'],
+              headers=['Content-Type'],
+              supports_credentials=True)
 def cors_test():
     return jsonify({"message": "CORS preflight successful"})
 

@@ -22,12 +22,17 @@ def process_text():
         if not text:
             return jsonify({'error': 'No text provided'}), 400
 
-        print("Received:", data)
+        print("✅ Received:", data)
 
+        # 🔍 GPT call
         reply_json = get_gpt_reply(text)
-        print("GPT raw reply:", repr(reply_json))
+        print("📥 GPT raw reply:", repr(reply_json))
 
-        # Extract the first JSON-like block from GPT's reply
+        if not reply_json:
+            print("❌ GPT returned empty response — check input and API key.")
+            return jsonify({'error': 'GPT returned empty response'}), 500
+
+        # 📦 Extract JSON block
         json_match = re.search(r"{.*}", reply_json, re.DOTALL)
         if not json_match:
             print("❌ Could not find JSON block in GPT reply")
@@ -41,6 +46,7 @@ def process_text():
             print("❌ JSON decode failed:", e)
             return jsonify({'error': 'Invalid GPT JSON format'}), 500
 
+        # 🎯 Handle intent
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
@@ -51,18 +57,21 @@ def process_text():
         else:
             final_reply = "Sorry, I couldn't understand your request."
 
+        # 🔊 Generate speech
         audio_filename = generate_tts(final_reply)
         if not audio_filename:
             print("❌ TTS failed.")
             return jsonify({'reply': final_reply, 'audio_url': None})
 
-        print("Audio filename:", audio_filename)
+        print("📁 Audio filename:", audio_filename)
         audio_url = f"https://ubiquitous-octo-carnival-backend.onrender.com/audio/{audio_filename}"
         return jsonify({'reply': final_reply, 'audio_url': audio_url})
+
     except Exception as e:
         print("❌ ERROR:", e)
         return jsonify({'error': 'Internal server error'}), 500
 
+# For CORS preflight testing
 @app.route("/cors-test", methods=["OPTIONS"])
 @cross_origin(origin='https://ubiquitous-octo-carnival.onrender.com',
               methods=['OPTIONS'],

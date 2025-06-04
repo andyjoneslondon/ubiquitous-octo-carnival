@@ -17,24 +17,28 @@
         }
 
         #recordBtn {
-            background-color: crimson;
+            background: none;
             border: none;
-            border-radius: 50%;
-            width: 70px;
-            height: 70px;
             cursor: pointer;
-            color: white;
-            font-size: 28px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.2s ease, transform 0.1s ease;
+            padding: 0;
         }
 
-        #recordBtn:hover {
-            background-color: #b30000;
+        #recordBtn img {
+            width: 72px;
+            height: 72px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
         }
 
-        #recordBtn:active {
-            transform: scale(0.9);
+        #recordBtn img:hover {
+            transform: scale(1.1);
+        }
+
+        #instructions {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
         }
 
         #status, #response {
@@ -50,7 +54,10 @@
 </head>
 <body>
     <h1>📍 Voice Location Reporter</h1>
-    <button id="recordBtn">🎙️</button>
+    <button id="recordBtn">
+        <img src="barty_button.png" alt="Barty Record">
+    </button>
+    <p id="instructions">Tap the button below to report or ask about a location.</p>
     <div id="status"></div>
     <div id="response"></div>
     <audio id="audio" controls hidden></audio>

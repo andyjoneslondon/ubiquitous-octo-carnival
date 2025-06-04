@@ -29,21 +29,26 @@ function sendText(text) {
     fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ text: userInput }),
-  mode: 'cors'
-})
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text }),
+        mode: 'cors'
+    })
     .then(response => response.json())
     .then(data => {
         responseText.textContent = "🤖 " + data.reply;
-        audioPlayer.src = data.audio_url;
-        audioPlayer.hidden = false;
-        audioPlayer.play();
+        if (data.audio_url) {
+            audioPlayer.src = data.audio_url;
+            audioPlayer.hidden = false;
+            audioPlayer.play().catch(err => {
+                console.warn("Audio playback failed:", err);
+            });
+        } else {
+            console.warn("No audio URL returned.");
+        }
     })
-.catch(error => {
-  console.error("Full fetch error:", error);
-  responseText.textContent = "❌ Failed to get response. See console for details.";
-});
-
+    .catch(error => {
+        console.error("Full fetch error:", error);
+        responseText.textContent = "❌ Failed to get response. See console for details.";
+    });
 }

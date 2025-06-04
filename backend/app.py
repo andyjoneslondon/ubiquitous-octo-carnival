@@ -27,21 +27,15 @@ def process_text():
         print("Received:", data)
 
         reply_json = get_gpt_reply(text)
-        print("GPT raw reply:", repr(reply_json))
-
-        # Extract just the JSON block from GPT reply
-        json_match = re.search(r"{.*}", reply_json, re.DOTALL)
-        if not json_match:
-            print("❌ Could not find JSON block in GPT reply")
-            return jsonify({'error': 'Invalid GPT format'}), 500
+        print("GPT raw reply:", reply_json)
 
         try:
-            parsed = json.loads(json_match.group(0))
+            parsed = json.loads(reply_json)
             intent = parsed['intent']
             location = parsed['location']
         except Exception as e:
-            print("❌ JSON decode failed:", e)
-            return jsonify({'error': 'Invalid GPT JSON format'}), 500
+            print("❌ Failed to parse GPT response:", e)
+            return jsonify({'error': 'Invalid GPT format'}), 500
 
         if intent == "report":
             status = parsed.get('status', 'unknown')
@@ -53,7 +47,6 @@ def process_text():
         else:
             final_reply = "Sorry, I couldn't understand your request."
 
-        # Generate spoken response
         audio_filename = generate_tts(final_reply)
         if not audio_filename:
             print("❌ TTS failed.")
@@ -61,11 +54,14 @@ def process_text():
 
         print("Audio filename:", audio_filename)
         audio_url = f"https://ubiquitous-octo-carnival-backend.onrender.com/audio/{audio_filename}"
-
         return jsonify({'reply': final_reply, 'audio_url': audio_url})
     except Exception as e:
         print("❌ ERROR:", e)
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route("/cors-test", methods=["OPTIONS"])
+def cors_test():
+    return jsonify({"message": "CORS preflight successful"})
 
 @app.route('/audio/<filename>')
 def serve_audio(filename):

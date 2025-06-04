@@ -25,15 +25,21 @@ def process_text():
         print("Received:", data)
 
         reply_json = get_gpt_reply(text)
-        print("GPT raw reply:", reply_json)
+        print("GPT raw reply:", repr(reply_json))
+
+        # Extract the first JSON-like block from GPT's reply
+        json_match = re.search(r"{.*}", reply_json, re.DOTALL)
+        if not json_match:
+            print("❌ Could not find JSON block in GPT reply")
+            return jsonify({'error': 'Invalid GPT format'}), 500
 
         try:
-            parsed = json.loads(reply_json)
+            parsed = json.loads(json_match.group(0))
             intent = parsed['intent']
             location = parsed['location']
         except Exception as e:
-            print("❌ Failed to parse GPT response:", e)
-            return jsonify({'error': 'Invalid GPT format'}), 500
+            print("❌ JSON decode failed:", e)
+            return jsonify({'error': 'Invalid GPT JSON format'}), 500
 
         if intent == "report":
             status = parsed.get('status', 'unknown')

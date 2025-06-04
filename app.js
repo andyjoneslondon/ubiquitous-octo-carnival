@@ -40,11 +40,9 @@ function sendText(text) {
         if (data.audio_url) {
             audioPlayer.src = data.audio_url;
             audioPlayer.hidden = false;
-            audioPlayer.play().catch(err => {
-                console.warn("Audio playback failed:", err);
-            });
+            audioPlayer.play();
         } else {
-            console.warn("No audio URL returned.");
+            console.log("No audio URL returned.");
         }
     })
     .catch(error => {

@@ -1,24 +1,33 @@
-from pymongo import MongoClient
+
 import os
-import datetime
+from pymongo import MongoClient
+from datetime import datetime, timedelta
 
-# Connect to MongoDB using the URI from environment variables
-client = MongoClient(os.getenv("MONGO_URI"))
-
-# Access the database and collection
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)
 db = client["taxi_app"]
 reports = db["reports"]
 
 def save_report(location, status):
-    reports.insert_one({
-        "location": location,
+    report = {
+        "location": location.lower(),
         "status": status,
-        "timestamp": datetime.datetime.utcnow()
-    })
+        "timestamp": datetime.utcnow()
+    }
+    reports.insert_one(report)
 
-def get_latest_status(location):
-    doc = reports.find_one(
-        {"location": location},
-        sort=[("timestamp", -1)]
-    )
-    return doc["status"] if doc else "No recent reports for this location."
+def get_latest_status(location, lookback_minutes=60):
+    location = location.lower()
+    time_cutoff = datetime.utcnow() - timedelta(minutes=lookback_minutes)
+    recent_reports = reports.find({
+        "location": location,
+        "timestamp": {"$gte": time_cutoff}
+    }).sort("timestamp", -1)
+
+    status_list = [r["status"] for r in recent_reports]
+    unique_statuses = list(dict.fromkeys(status_list))  # Deduplicate in order
+
+    if not unique_statuses:
+        return "no recent updates."
+
+    return " and ".join(unique_statuses)

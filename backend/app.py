@@ -71,7 +71,6 @@ def process_text():
         print("❌ ERROR:", e)
         return jsonify({'error': 'Internal server error'}), 500
 
-# For CORS preflight testing
 @app.route("/cors-test", methods=["OPTIONS"])
 @cross_origin(origin='https://ubiquitous-octo-carnival.onrender.com',
               methods=['OPTIONS'],

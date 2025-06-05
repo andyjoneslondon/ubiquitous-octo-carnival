@@ -22,39 +22,54 @@ recordButton.addEventListener('click', async () => {
 
     mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
 
-   mediaRecorder.onstop = async () => {
-  const blob = new Blob(chunks, { type: 'audio/mp4' });  // Or 'audio/mpeg'
-  const formData = new FormData();  // ✅ You must declare it before using
-  formData.append('audio', blob, 'input.mp4');  // ✅ Match file extension
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: 'audio/mp4' }); // Can also use audio/webm
+      const formData = new FormData();
+      formData.append('audio', blob, 'input.mp4');
 
-  try {
-    const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
-      method: 'POST',
-      body: formData
-    });
+      try {
+        const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
+          method: 'POST',
+          body: formData
+        });
 
-    const result = await response.json();
+        const result = await response.json();
 
-    spinner.style.display = 'none';
-    recordButton.disabled = false;
+        spinner.style.display = 'none';
+        recordButton.disabled = false;
 
-    if (result.transcript) {
-      transcriptText.textContent = `📝 You said: "${result.transcript}"`;
-    }
+        if (result.transcript) {
+          transcriptText.textContent = `📝 You said: "${result.transcript}"`;
+        }
 
-    if (result.reply) {
-      responseText.textContent = `🤖 ${result.reply}`;
-    }
+        if (result.reply) {
+          responseText.textContent = `🤖 ${result.reply}`;
+        }
 
-    if (result.audio_url) {
-      audioPlayer.src = result.audio_url;
-      audioPlayer.style.display = 'block';
-      audioPlayer.play();
-    }
+        if (result.audio_url) {
+          audioPlayer.src = result.audio_url;
+          audioPlayer.style.display = 'block';
+          audioPlayer.play();
+        }
+      } catch (err) {
+        console.error('Upload failed:', err);
+        spinner.style.display = 'none';
+        recordButton.disabled = false;
+        responseText.textContent = '❌ Upload or response failed.';
+      }
+    };
+
+    mediaRecorder.start();
+
+    setTimeout(() => {
+      mediaRecorder.stop();
+      stream.getTracks().forEach(track => track.stop());
+    }, 7000); // Stop recording after 7 seconds
+
   } catch (err) {
-    console.error('Upload failed:', err);
+    console.error('Mic error:', err);
     spinner.style.display = 'none';
     recordButton.disabled = false;
-    responseText.textContent = '❌ Upload or response failed.';
+    responseText.textContent = '❌ Mic not available or permission denied.';
   }
-};
+});

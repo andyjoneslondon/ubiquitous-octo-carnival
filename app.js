@@ -23,14 +23,10 @@ recordButton.addEventListener('click', async () => {
     mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
 
     mediaRecorder.onstop = async () => {
-    const blob = new Blob(chunks, { type: 'audio/webm' }); // ✅ Use supported format
-    console.log('Blob type:', blob.type);
-    const formData = new FormData();
-    formData.append('audio', blob, 'input.webm'); // ✅ Match filename to MIME
-
-  // ... send to backend ...
-};
-
+      const blob = new Blob(chunks, { type: 'audio/webm' }); // ✅ Use supported format
+      console.log('Blob type:', blob.type);
+      const formData = new FormData();
+      formData.append('audio', blob, 'input.webm'); // ✅ Match filename to MIME
 
       try {
         const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {

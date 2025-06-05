@@ -1,52 +1,68 @@
-const status = document.getElementById('status');
+const recordButton = document.getElementById('recordButton');
 const responseText = document.getElementById('response');
+const transcriptText = document.getElementById('transcript');
+const spinner = document.getElementById('spinner');
 const audioPlayer = document.getElementById('audio');
 
-function startRecognition() {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+let mediaRecorder;
+let chunks = [];
 
-    recognition.onstart = () => {
-        status.textContent = "🎤 Listening...";
-    };
+recordButton.addEventListener('click', async () => {
+  responseText.textContent = '';
+  transcriptText.textContent = '';
+  audioPlayer.style.display = 'none';
 
-    recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        status.textContent = `📝 Heard: "${text}"`;
-        sendText(text);
-    };
+  recordButton.disabled = true;
+  spinner.style.display = 'block';
 
-    recognition.onerror = (event) => {
-        status.textContent = `❌ Error: ${event.error}`;
-    };
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
 
-    recognition.start();
-}
+    mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
 
-function sendText(text) {
-    fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', blob, 'input.webm');
+
+      const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text }),
-        mode: 'cors'
-    })
-    .then(response => response.json())
-    .then(data => {
-        responseText.textContent = "🤖 " + data.reply;
-        if (data.audio_url) {
-            audioPlayer.src = data.audio_url;
-            audioPlayer.hidden = false;
-            audioPlayer.play();
-        } else {
-            console.log("No audio URL returned.");
-        }
-    })
-    .catch(error => {
-        console.error("Full fetch error:", error);
-        responseText.textContent = "❌ Failed to get response. See console for details.";
-    });
-}
+        body: formData
+      });
+
+      const result = await response.json();
+
+      spinner.style.display = 'none';
+      recordButton.disabled = false;
+
+      if (result.transcript) {
+        transcriptText.textContent = `📝 You said: "${result.transcript}"`;
+      }
+
+      if (result.reply) {
+        responseText.textContent = `🤖 ${result.reply}`;
+      }
+
+      if (result.audio_url) {
+        audioPlayer.src = result.audio_url;
+        audioPlayer.style.display = 'block';
+        audioPlayer.play();
+      }
+    };
+
+    mediaRecorder.start();
+
+    setTimeout(() => {
+      mediaRecorder.stop();
+      stream.getTracks().forEach(track => track.stop());
+    }, 7000); // 7 seconds
+
+  } catch (err) {
+    console.error('Mic error:', err);
+    spinner.style.display = 'none';
+    recordButton.disabled = false;
+    responseText.textContent = '❌ Mic not available or permission denied.';
+  }
+});

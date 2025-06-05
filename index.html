@@ -1,157 +1,51 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Voice Location Reporter</title>
+  <meta charset="UTF-8">
+  <title>Barty Voice Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 20px;
+      font-family: sans-serif;
       text-align: center;
+      padding: 1em;
     }
 
-    h1 {
-      font-size: 16px;
-      color: #222;
-      margin-top: 40px;
-    }
-
-    #recordBtn {
-      background: none;
+    #recordButton {
+      background-color: #007bff;
+      color: white;
+      padding: 20px 40px;
+      font-size: 1.5em;
       border: none;
-      margin-top: 30px;
-      padding: 0;
-      cursor: pointer;
-    }
-
-    #recordBtn img {
-      opacity: 1;
-      transition: transform 0.2s ease, opacity 0.3s ease;
-      width: 280px;
-      height: 280px;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease;
-    }
-
-    #recordBtn img:hover {
-      opacity: 1;
-      transform: scale(1.08);
-    }
-
-    #instructions {
+      border-radius: 12px;
       margin-top: 20px;
-      font-size: 16px;
-      color: #555;
-      padding: 0 15px;
+      transition: background-color 0.3s;
     }
 
-    #status, #response {
-      margin-top: 20px;
-      font-size: 17px;
-      color: #333;
-      padding: 0 15px;
+    #recordButton:disabled {
+      background-color: #999;
+    }
+
+    #spinner {
+      display: none;
+      margin-top: 10px;
     }
 
     #audio {
-      margin-top: 24px;
-      width: 90%;
-      max-width: 320px;
+      margin-top: 20px;
+      display: none;
     }
-  
-    #recordBtn:disabled img {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    </style>
+  </style>
 </head>
 <body>
-  <h1>Welcome to the Barty Test App</h1>
-  <button id="recordBtn">
-    <img src="barty_button.png" alt="Record Button" />
-  </button>
-  <p id="instructions">Tap the button to report or ask about a location.</p>
-  <div id="status"></div>
-  <div id="spinner" style="display:none; margin: 20px;"><svg width="36" height="36" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid"><circle cx="50" cy="50" fill="none" stroke="#007bff" stroke-width="10" r="35" stroke-dasharray="164.93361431346415 56.97787143782138"><animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50;360 50 50" keyTimes="0;1"/></circle></svg></div>
-  <div id="response"></div>
-  <audio id="audio" autoplay controls hidden></audio>
+  <h1>Barty</h1>
+  <p>Tap to record your voice for 7 seconds</p>
+  <button id="recordButton">🎤 Record</button>
+  <div id="spinner">⏳ Processing...</div>
+  <p id="transcript"></p>
+  <p id="response"></p>
+  <audio id="audio" controls></audio>
 
-  <script>
-    const status = document.getElementById('status');
-    const responseText = document.getElementById('response');
-    const audioPlayer = document.getElementById('audio');
-    const spinner = document.getElementById('spinner');
-    const recordBtn = document.getElementById('recordBtn');
-
-    recordBtn.addEventListener('click', startRecognition);
-
-    function startRecognition() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        status.textContent = "🎤 Listening...";
-      };
-
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        status.textContent = `📝 Heard: "${text}"`;
-        
-        recordBtn.disabled = true;
-        spinner.style.display = "block";
-        sendText(text);
-    
-      };
-
-      recognition.onerror = (event) => {
-        status.textContent = `❌ Error: ${event.error}`;
-      };
-
-      recognition.start();
-    }
-
-    function sendText(userInput) {
-      fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: userInput }),
-        mode: 'cors'
-      })
-      .then(response => response.json())
-      .then(data => {
-        spinner.style.display = "none";
-        recordBtn.disabled = false;
-        responseText.textContent = "🤖 " + data.reply;
-        if (data.audio_url) {
-          
-audioPlayer.src = data.audio_url;
-audioPlayer.onloadeddata = () => {
-    setTimeout(() => {
-        audioPlayer.play().catch((err) => {
-            console.error("❌ Playback failed:", err);
-        });
-    }, 300);
-};
-        } else {
-          audioPlayer.hidden = true;
-        }
-      })
-      .catch(error => {
-        console.error("Full fetch error:", error);
-        spinner.style.display = "none";
-        recordBtn.disabled = false;
-        responseText.textContent = "❌ Failed to get response. See console for details.";
-        audioPlayer.hidden = true;
-      });
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

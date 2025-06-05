@@ -19,6 +19,7 @@ def transcribe_audio(audio_file):
                 file=f,
                 response_format="text"
             )
+os.remove(temp_audio_path)
 
         transcript = transcript_response.strip()
         print("✅ Whisper transcript:", transcript)

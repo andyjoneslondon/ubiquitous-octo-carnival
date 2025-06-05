@@ -29,6 +29,8 @@
     }
 
     #recordBtn img {
+      opacity: 1;
+      transition: transform 0.2s ease, opacity 0.3s ease;
       width: 70px;
       height: 70px;
       border-radius: 14px;
@@ -37,6 +39,7 @@
     }
 
     #recordBtn img:hover {
+      opacity: 1;
       transform: scale(1.08);
     }
 
@@ -59,7 +62,12 @@
       width: 90%;
       max-width: 320px;
     }
-  </style>
+  
+    #recordBtn:disabled img {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    </style>
 </head>
 <body>
   <h1>📍 Voice Location Reporter</h1>
@@ -68,6 +76,7 @@
   </button>
   <p id="instructions">Tap the button to report or ask about a location.</p>
   <div id="status"></div>
+  <div id="spinner" style="display:none; margin: 20px;"><svg width="36" height="36" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid"><circle cx="50" cy="50" fill="none" stroke="#007bff" stroke-width="10" r="35" stroke-dasharray="164.93361431346415 56.97787143782138"><animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50;360 50 50" keyTimes="0;1"/></circle></svg></div>
   <div id="response"></div>
   <audio id="audio" controls hidden></audio>
 
@@ -75,6 +84,7 @@
     const status = document.getElementById('status');
     const responseText = document.getElementById('response');
     const audioPlayer = document.getElementById('audio');
+    const spinner = document.getElementById('spinner');
     const recordBtn = document.getElementById('recordBtn');
 
     recordBtn.addEventListener('click', startRecognition);
@@ -92,7 +102,11 @@
       recognition.onresult = (event) => {
         const text = event.results[0][0].transcript;
         status.textContent = `📝 Heard: "${text}"`;
+        
+        recordBtn.disabled = true;
+        spinner.style.display = "block";
         sendText(text);
+    
       };
 
       recognition.onerror = (event) => {
@@ -113,6 +127,8 @@
       })
       .then(response => response.json())
       .then(data => {
+        spinner.style.display = "none";
+        recordBtn.disabled = false;
         responseText.textContent = "🤖 " + data.reply;
         if (data.audio_url) {
           audioPlayer.src = data.audio_url;
@@ -124,6 +140,8 @@
       })
       .catch(error => {
         console.error("Full fetch error:", error);
+        spinner.style.display = "none";
+        recordBtn.disabled = false;
         responseText.textContent = "❌ Failed to get response. See console for details.";
         audioPlayer.hidden = true;
       });

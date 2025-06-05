@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Barty</title>
+  <title>Voice Location Reporter</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -17,7 +17,7 @@
     h1 {
       font-size: 22px;
       color: #222;
-      margin-top: 30px;
+      margin-top: 40px;
     }
 
     #recordBtn {
@@ -31,8 +31,8 @@
     #recordBtn img {
       opacity: 1;
       transition: transform 0.2s ease, opacity 0.3s ease;
-      width: 210px;
-      height: 210px;
+      width: 70px;
+      height: 70px;
       border-radius: 14px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s ease;
@@ -52,7 +52,7 @@
 
     #status, #response {
       margin-top: 20px;
-      font-size: 28px;
+      font-size: 17px;
       color: #333;
       padding: 0 15px;
     }
@@ -70,7 +70,7 @@
     </style>
 </head>
 <body>
-  <h1>Barty Test App</h1>
+  <h1>📍 Voice Location Reporter</h1>
   <button id="recordBtn">
     <img src="barty_button.png" alt="Record Button" />
   </button>
@@ -90,47 +90,31 @@
     recordBtn.addEventListener('click', startRecognition);
 
     function startRecognition() {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
 
-    status.textContent = "🎤 Listening...";
-    recordBtn.disabled = true;
-    recordBtn.classList.add("disabled");
+      recognition.onstart = () => {
+        status.textContent = "🎤 Listening...";
+      };
 
-    let capturedText = ""; // store transcript in case onresult fires late
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        status.textContent = `📝 Heard: "${text}"`;
+        
+        recordBtn.disabled = true;
+        spinner.style.display = "block";
+        sendText(text);
+    
+      };
 
-    recognition.onresult = (event) => {
-        capturedText = event.results[0][0].transcript;
-    };
-
-    recognition.onerror = (event) => {
+      recognition.onerror = (event) => {
         status.textContent = `❌ Error: ${event.error}`;
-        recordBtn.disabled = false;
-        recordBtn.classList.remove("disabled");
-    };
+      };
 
-    recognition.onend = () => {
-        recordBtn.disabled = false;
-        recordBtn.classList.remove("disabled");
-
-        if (capturedText) {
-            status.textContent = `📝 Heard: "${capturedText}"`;
-            sendText(capturedText);
-        } else {
-            status.textContent = "⚠️ No input captured.";
-        }
-    };
-
-    recognition.start();
-
-    // ⏱ Force stop after 7 seconds, even if still talking
-    setTimeout(() => {
-        recognition.stop(); // triggers onend
-        status.textContent = "⏱️ Stopped recording after 7 seconds.";
-    }, 7000);
-}
+      recognition.start();
+    }
 
     function sendText(userInput) {
       fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {
@@ -147,9 +131,13 @@
         recordBtn.disabled = false;
         responseText.textContent = "🤖 " + data.reply;
         if (data.audio_url) {
-          audioPlayer.src = data.audio_url;
-          audioPlayer.hidden = false;
-          audioPlayer.play();
+          
+audioPlayer.src = data.audio_url;
+audioPlayer.onloadeddata = () => {
+    audioPlayer.play().catch((err) => {
+        console.error("❌ Playback failed:", err);
+    });
+};
         } else {
           audioPlayer.hidden = true;
         }

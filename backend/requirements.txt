@@ -5,3 +5,4 @@ gtts
 gunicorn
 pymongo
 dnspython
+python-dotenv

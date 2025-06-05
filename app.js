@@ -23,9 +23,9 @@ recordButton.addEventListener('click', async () => {
     mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
 
     mediaRecorder.onstop = async () => {
-      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const blob = new Blob(chunks, { type: 'audio/mp3' });  // <-- try mp3 or mp4
       const formData = new FormData();
-      formData.append('audio', blob, 'input.webm');
+      formData.append('audio', blob, 'input.mp3');           // <-- filename matches type
 
       const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
         method: 'POST',

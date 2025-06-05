@@ -15,7 +15,7 @@
     }
 
     h1 {
-      font-size: 36px;
+      font-size: 22px;
       color: #222;
       margin-top: 30px;
     }
@@ -70,7 +70,7 @@
     </style>
 </head>
 <body>
-  <h1>Barty</h1>
+  <h1>Barty Test App</h1>
   <button id="recordBtn">
     <img src="barty_button.png" alt="Record Button" />
   </button>
@@ -90,31 +90,47 @@
     recordBtn.addEventListener('click', startRecognition);
 
     function startRecognition() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
 
-      recognition.onstart = () => {
-        status.textContent = "🎤 Listening...";
-      };
+    status.textContent = "🎤 Listening...";
+    recordBtn.disabled = true;
+    recordBtn.classList.add("disabled");
 
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        status.textContent = `📝 Heard: "${text}"`;
-        
-        recordBtn.disabled = true;
-        spinner.style.display = "block";
-        sendText(text);
-    
-      };
+    let capturedText = ""; // store transcript in case onresult fires late
 
-      recognition.onerror = (event) => {
+    recognition.onresult = (event) => {
+        capturedText = event.results[0][0].transcript;
+    };
+
+    recognition.onerror = (event) => {
         status.textContent = `❌ Error: ${event.error}`;
-      };
+        recordBtn.disabled = false;
+        recordBtn.classList.remove("disabled");
+    };
 
-      recognition.start();
-    }
+    recognition.onend = () => {
+        recordBtn.disabled = false;
+        recordBtn.classList.remove("disabled");
+
+        if (capturedText) {
+            status.textContent = `📝 Heard: "${capturedText}"`;
+            sendText(capturedText);
+        } else {
+            status.textContent = "⚠️ No input captured.";
+        }
+    };
+
+    recognition.start();
+
+    // ⏱ Force stop after 7 seconds, even if still talking
+    setTimeout(() => {
+        recognition.stop(); // triggers onend
+        status.textContent = "⏱️ Stopped recording after 7 seconds.";
+    }, 7000);
+}
 
     function sendText(userInput) {
       fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_text', {

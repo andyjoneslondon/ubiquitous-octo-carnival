@@ -1,10 +1,9 @@
+
 import openai
 import os
 
-# Initialize client using new SDK structure
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Stricter system prompt (as previously successful)
 system_prompt = (
     "You are an assistant that receives transcribed voice input from taxi drivers.\n\n"
     "Your task is to extract the user's intent and location from each input, and return a response ONLY as JSON.\n\n"

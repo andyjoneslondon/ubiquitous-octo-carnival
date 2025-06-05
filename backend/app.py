@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 import json
@@ -24,7 +25,6 @@ def process_text():
 
         print("✅ Received:", data)
 
-        # 🔍 GPT call
         reply_json = get_gpt_reply(text)
         print("📥 GPT raw reply:", repr(reply_json))
 
@@ -32,7 +32,6 @@ def process_text():
             print("❌ GPT returned empty response — check input and API key.")
             return jsonify({'error': 'GPT returned empty response'}), 500
 
-        # 📦 Extract JSON block
         json_match = re.search(r"{.*}", reply_json, re.DOTALL)
         if not json_match:
             print("❌ Could not find JSON block in GPT reply")
@@ -46,7 +45,6 @@ def process_text():
             print("❌ JSON decode failed:", e)
             return jsonify({'error': 'Invalid GPT JSON format'}), 500
 
-        # 🎯 Handle intent
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
@@ -57,7 +55,6 @@ def process_text():
         else:
             final_reply = "Sorry, I couldn't understand your request."
 
-        # 🔊 Generate speech
         audio_filename = generate_tts(final_reply)
         if not audio_filename:
             print("❌ TTS failed.")

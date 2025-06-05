@@ -25,7 +25,7 @@ def get_latest_status(location, lookback_minutes=60):
     }).sort("timestamp", -1)
 
     status_list = [r["status"] for r in recent_reports]
-    unique_statuses = list(dict.fromkeys(status_list))  # Deduplicate in order
+    unique_statuses = list(dict.fromkeys(status_list))
 
     if not unique_statuses:
         return "no recent updates."

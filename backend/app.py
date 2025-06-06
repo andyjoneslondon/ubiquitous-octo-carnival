@@ -45,7 +45,7 @@ def process_text():
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
-            final_reply = f"Thanks. I've noted that {location} has {status}."
+            final_reply = f"Thanks. I've noted that {location} is {status}."
         elif intent == "query":
             status = get_latest_status(location)
             final_reply = f"{location} currently has {status}."
@@ -99,10 +99,10 @@ def process_audio():
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
-            final_reply = f"Thanks. I've noted that {location} has {status}."
+            final_reply = f"Thanks. I've noted that {location} is {status}."
         elif intent == "query":
             status = get_latest_status(location)
-            final_reply = f"{location} currently has {status}."
+            final_reply = f"{location} currently is {status}."
         else:
             final_reply = "Sorry, I couldn't understand your request."
 

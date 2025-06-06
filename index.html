@@ -12,18 +12,21 @@
     }
 
     #recordButton {
-      background-color: #007bff;
-      color: white;
-      padding: 20px 40px;
-      font-size: 1.5em;
-      border: none;
-      border-radius: 12px;
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
       margin-top: 20px;
-      transition: background-color 0.3s;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
-    #recordButton:disabled {
-      background-color: #999;
+    #recordButton:active {
+      transform: scale(0.95);
+    }
+
+    #recordButton.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
     }
 
     #spinner {
@@ -40,7 +43,8 @@
 <body>
   <h1>Barty</h1>
   <p>Tap to talk | Captures 7 seconds</p>
-  <button id="recordButton">Talk</button>
+  <img id="recordButton" src="recordButton.png" alt="Talk button">
+
   <div id="spinner">🤔 Thinking...</div>
   <p id="transcript"></p>
   <p id="response"></p>

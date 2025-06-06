@@ -8,6 +8,10 @@ let mediaRecorder;
 let chunks = [];
 
 recordButton.addEventListener('click', async () => {
+  // Prime Safari's audio policy
+  const unlockAudio = new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA...');
+  unlockAudio.play().catch(() => {});
+
   responseText.textContent = '';
   transcriptText.textContent = '';
   audioPlayer.style.display = 'none';
@@ -51,7 +55,7 @@ recordButton.addEventListener('click', async () => {
           audioPlayer.style.display = 'block';
 
           try {
-            await audioPlayer.play(); // Should autoplay if allowed by browser
+            await audioPlayer.play();
           } catch (err) {
             console.warn('Autoplay blocked:', err);
             responseText.textContent += '\n🔈 Tap play above to hear the reply.';

@@ -49,8 +49,15 @@ recordButton.addEventListener('click', async () => {
         if (result.audio_url) {
           audioPlayer.src = result.audio_url;
           audioPlayer.style.display = 'block';
-          audioPlayer.play();
+
+          try {
+            await audioPlayer.play(); // Should autoplay if allowed by browser
+          } catch (err) {
+            console.warn('Autoplay blocked:', err);
+            responseText.textContent += '\n🔈 Tap play above to hear the reply.';
+          }
         }
+
       } catch (err) {
         console.error('Upload failed:', err);
         spinner.style.display = 'none';
@@ -65,6 +72,7 @@ recordButton.addEventListener('click', async () => {
       mediaRecorder.stop();
       stream.getTracks().forEach(track => track.stop());
     }, 7000);
+
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';

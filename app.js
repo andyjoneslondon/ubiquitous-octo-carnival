@@ -93,7 +93,7 @@ recordButton.addEventListener('click', async () => {
     setTimeout(() => {
       mediaRecorder.stop();
       stream.getTracks().forEach(track => track.stop());
-    }, 7000);
+    }, 5000);
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';

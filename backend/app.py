@@ -45,12 +45,12 @@ def process_text():
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
-            final_reply = f"Thanks. I've noted that {location} is {status}."
+            final_reply = f"Thanks. I've noted that {location} {status}."
         elif intent == "query":
             status = get_latest_status(location)
-            final_reply = f"{location} currently has {status}."
+            final_reply = f"{location} currently {status}."
         else:
-            final_reply = "Sorry, I couldn't understand your request."
+            final_reply = "Sorry, I didn't understand that."
 
         audio_filename = generate_tts(final_reply)
         audio_url = f"https://ubiquitous-octo-carnival-backend.onrender.com/audio/{audio_filename}" if audio_filename else None
@@ -99,12 +99,12 @@ def process_audio():
         if intent == "report":
             status = parsed.get('status', 'unknown')
             save_report(location, status)
-            final_reply = f"Thanks. I've noted that {location} is {status}."
+            final_reply = f"Thanks. I've noted that {location} {status}."
         elif intent == "query":
             status = get_latest_status(location)
-            final_reply = f"{location} currently is {status}."
+            final_reply = f"{location} currently {status}."
         else:
-            final_reply = "Sorry, I couldn't understand your request."
+            final_reply = "Sorry, I didn't understand that."
 
         audio_filename = generate_tts(final_reply)
         audio_url = f"https://ubiquitous-octo-carnival-backend.onrender.com/audio/{audio_filename}" if audio_filename else None

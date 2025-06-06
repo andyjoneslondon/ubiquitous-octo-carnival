@@ -9,13 +9,14 @@ let mediaRecorder;
 let chunks = [];
 
 recordButton.addEventListener('click', async () => {
-  // 🔓 Unlock mobile autoplay policies
+  // 🔓 Unlock autoplay policies with silent audio
   const unlockAudio = new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA...');
   unlockAudio.play().catch(() => {});
 
-  // 📦 Preload the actual audio element (in case autoplay becomes allowed)
+  // 🚫 Reset audio element to prevent replay
+  audioPlayer.pause();
+  audioPlayer.src = '';
   audioPlayer.load();
-  audioPlayer.play().catch(() => {}); // harmless if no src yet
 
   // UI reset
   responseText.textContent = '';

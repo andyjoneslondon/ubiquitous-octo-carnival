@@ -3,18 +3,25 @@ const responseText = document.getElementById('response');
 const transcriptText = document.getElementById('transcript');
 const spinner = document.getElementById('spinner');
 const audioPlayer = document.getElementById('audio');
+const playReplyButton = document.getElementById('playReply');
 
 let mediaRecorder;
 let chunks = [];
 
 recordButton.addEventListener('click', async () => {
-  // Prime Safari's audio policy
+  // 🔓 Unlock mobile autoplay policies
   const unlockAudio = new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA...');
   unlockAudio.play().catch(() => {});
 
+  // 📦 Preload the actual audio element (in case autoplay becomes allowed)
+  audioPlayer.load();
+  audioPlayer.play().catch(() => {}); // harmless if no src yet
+
+  // UI reset
   responseText.textContent = '';
   transcriptText.textContent = '';
   audioPlayer.style.display = 'none';
+  playReplyButton.style.display = 'none';
 
   recordButton.classList.add('disabled');
   spinner.style.display = 'block';
@@ -57,8 +64,18 @@ recordButton.addEventListener('click', async () => {
           try {
             await audioPlayer.play();
           } catch (err) {
-            console.warn('Autoplay blocked:', err);
-            responseText.textContent += '\n🔈 Tap play above to hear the reply.';
+            console.warn('Autoplay blocked, showing manual play button.', err);
+            playReplyButton.style.display = 'inline-block';
+
+            // Attach manual play trigger
+            playReplyButton.onclick = async () => {
+              try {
+                await audioPlayer.play();
+                playReplyButton.style.display = 'none';
+              } catch (err) {
+                console.error('Manual playback failed:', err);
+              }
+            };
           }
         }
 
@@ -76,7 +93,6 @@ recordButton.addEventListener('click', async () => {
       mediaRecorder.stop();
       stream.getTracks().forEach(track => track.stop());
     }, 7000);
-
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';

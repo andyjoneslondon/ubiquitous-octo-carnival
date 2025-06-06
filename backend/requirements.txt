@@ -6,3 +6,4 @@ gunicorn
 pymongo
 dnspython
 python-dotenv
+ffmpeg

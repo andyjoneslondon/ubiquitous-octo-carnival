@@ -3,7 +3,6 @@ const responseText = document.getElementById('response');
 const transcriptText = document.getElementById('transcript');
 const spinner = document.getElementById('spinner');
 const audioPlayer = document.getElementById('audio');
-const playReplyButton = document.getElementById('playReply');
 
 let mediaRecorder;
 let chunks = [];
@@ -22,7 +21,6 @@ recordButton.addEventListener('click', async () => {
   responseText.textContent = '';
   transcriptText.textContent = '';
   audioPlayer.style.display = 'none';
-  playReplyButton.style.display = 'none';
 
   recordButton.classList.add('disabled');
   spinner.style.display = 'block';
@@ -65,18 +63,8 @@ recordButton.addEventListener('click', async () => {
           try {
             await audioPlayer.play();
           } catch (err) {
-            console.warn('Autoplay blocked, showing manual play button.', err);
-            playReplyButton.style.display = 'inline-block';
-
-            // Attach manual play trigger
-            playReplyButton.onclick = async () => {
-              try {
-                await audioPlayer.play();
-                playReplyButton.style.display = 'none';
-              } catch (err) {
-                console.error('Manual playback failed:', err);
-              }
-            };
+            console.warn('Autoplay blocked. User must tap play manually.', err);
+            responseText.textContent += '\n🔈 Tap the player above to hear the reply.';
           }
         }
 

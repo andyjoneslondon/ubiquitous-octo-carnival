@@ -1,3 +1,4 @@
+
 const recordButton = document.getElementById('recordButton');
 const responseText = document.getElementById('response');
 const transcriptText = document.getElementById('transcript');
@@ -22,7 +23,7 @@ recordButton.addEventListener('click', async () => {
   transcriptText.textContent = '';
   audioPlayer.style.display = 'none';
 
-  recordButton.classList.add('disabled');
+  recordButton.classList.add('disabled', 'processing');
   spinner.style.display = 'block';
 
   try {
@@ -54,7 +55,7 @@ recordButton.addEventListener('click', async () => {
         const result = await response.json();
 
         spinner.style.display = 'none';
-        recordButton.classList.remove('disabled');
+        recordButton.classList.remove('disabled', 'processing');
 
         if (result.transcript) {
           transcriptText.textContent = `📝 I Heard: "${result.transcript}"`;
@@ -79,27 +80,27 @@ recordButton.addEventListener('click', async () => {
       } catch (err) {
         console.error('Upload failed:', err);
         spinner.style.display = 'none';
-        recordButton.classList.remove('disabled');
+        recordButton.classList.remove('disabled', 'processing');
         responseText.textContent = '❌ Upload or response failed.';
       }
     };
 
     mediaRecorder.start();
+    recordButton.classList.add('recording'); // 🔴 pulse while recording
 
-    // ⏱️ Stop after 6 seconds and play end beep
     setTimeout(() => {
-  const stopBeep = new Audio('beep.wav');
-  stopBeep.play().catch(() => {}); // don't block mediaRecorder.stop()
+      const stopBeep = new Audio('beep.wav');
+      stopBeep.play().catch(() => {}); // don't await on iOS
 
-  mediaRecorder.stop();
-  stream.getTracks().forEach(track => track.stop());
-}, 5000);
-
+      mediaRecorder.stop();
+      stream.getTracks().forEach(track => track.stop());
+      recordButton.classList.remove('recording'); // remove pulse after recording
+    }, 6000);
 
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';
-    recordButton.classList.remove('disabled');
+    recordButton.classList.remove('disabled', 'processing');
     responseText.textContent = '❌ Mic not available or permission denied.';
   }
 });

@@ -27,6 +27,14 @@ recordButton.addEventListener('click', async () => {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // 🕒 Wait 500ms to allow mic to warm up
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // 🔊 Beep to indicate start of recording
+    const startBeep = new Audio('beep.wav');
+    await startBeep.play();
+
     mediaRecorder = new MediaRecorder(stream);
     chunks = [];
 
@@ -78,10 +86,15 @@ recordButton.addEventListener('click', async () => {
 
     mediaRecorder.start();
 
-    setTimeout(() => {
+    // ⏱️ Stop after 6 seconds and play end beep
+    setTimeout(async () => {
+      const stopBeep = new Audio('beep.wav');
+      await stopBeep.play();
+
       mediaRecorder.stop();
       stream.getTracks().forEach(track => track.stop());
-    }, 5000);
+    }, 6000);
+
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';
@@ -89,6 +102,7 @@ recordButton.addEventListener('click', async () => {
     responseText.textContent = '❌ Mic not available or permission denied.';
   }
 });
+
 // ✅ Register the service worker here, outside the event handler
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js')

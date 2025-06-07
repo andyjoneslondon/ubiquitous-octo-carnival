@@ -87,13 +87,14 @@ recordButton.addEventListener('click', async () => {
     mediaRecorder.start();
 
     // ⏱️ Stop after 6 seconds and play end beep
-    setTimeout(async () => {
-      const stopBeep = new Audio('beep.wav');
-      await stopBeep.play();
+    setTimeout(() => {
+  const stopBeep = new Audio('beep.wav');
+  stopBeep.play().catch(() => {}); // don't block mediaRecorder.stop()
 
-      mediaRecorder.stop();
-      stream.getTracks().forEach(track => track.stop());
-    }, 6000);
+  mediaRecorder.stop();
+  stream.getTracks().forEach(track => track.stop());
+}, 5000);
+
 
   } catch (err) {
     console.error('Mic error:', err);

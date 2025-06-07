@@ -1,4 +1,3 @@
-
 const recordButton = document.getElementById('recordButton');
 const responseText = document.getElementById('response');
 const transcriptText = document.getElementById('transcript');
@@ -24,6 +23,7 @@ recordButton.addEventListener('click', async () => {
   audioPlayer.style.display = 'none';
 
   recordButton.classList.add('disabled');
+  spinner.style.display = 'block';
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -46,8 +46,6 @@ recordButton.addEventListener('click', async () => {
       formData.append('audio', blob, 'input.webm');
 
       try {
-        spinner.style.display = 'block';
-
         const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
           method: 'POST',
           body: formData
@@ -87,13 +85,16 @@ recordButton.addEventListener('click', async () => {
     };
 
     mediaRecorder.start();
-    recordButton.classList.add('recording');
 
+    // ⏱️ Stop after 6 seconds and play end beep
     setTimeout(() => {
-      mediaRecorder.stop();
-      stream.getTracks().forEach(track => track.stop());
-      recordButton.classList.remove('recording');
-    }, 6000);
+  const stopBeep = new Audio('beep.wav');
+  stopBeep.play().catch(() => {}); // don't block mediaRecorder.stop()
+
+  mediaRecorder.stop();
+  stream.getTracks().forEach(track => track.stop());
+}, 5000);
+
 
   } catch (err) {
     console.error('Mic error:', err);

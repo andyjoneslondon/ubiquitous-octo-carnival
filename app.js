@@ -23,8 +23,7 @@ recordButton.addEventListener('click', async () => {
   transcriptText.textContent = '';
   audioPlayer.style.display = 'none';
 
-  recordButton.classList.add('disabled', 'processing');
-  spinner.style.display = 'block';
+  recordButton.classList.add('disabled');
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -47,6 +46,8 @@ recordButton.addEventListener('click', async () => {
       formData.append('audio', blob, 'input.webm');
 
       try {
+        spinner.style.display = 'block';
+
         const response = await fetch('https://ubiquitous-octo-carnival-backend.onrender.com/process_audio', {
           method: 'POST',
           body: formData
@@ -55,7 +56,7 @@ recordButton.addEventListener('click', async () => {
         const result = await response.json();
 
         spinner.style.display = 'none';
-        recordButton.classList.remove('disabled', 'processing');
+        recordButton.classList.remove('disabled');
 
         if (result.transcript) {
           transcriptText.textContent = `📝 I Heard: "${result.transcript}"`;
@@ -80,27 +81,24 @@ recordButton.addEventListener('click', async () => {
       } catch (err) {
         console.error('Upload failed:', err);
         spinner.style.display = 'none';
-        recordButton.classList.remove('disabled', 'processing');
+        recordButton.classList.remove('disabled');
         responseText.textContent = '❌ Upload or response failed.';
       }
     };
 
     mediaRecorder.start();
-    recordButton.classList.add('recording'); // 🔴 pulse while recording
+    recordButton.classList.add('recording');
 
     setTimeout(() => {
-      const stopBeep = new Audio('beep.wav');
-      stopBeep.play().catch(() => {}); // don't await on iOS
-
       mediaRecorder.stop();
       stream.getTracks().forEach(track => track.stop());
-      recordButton.classList.remove('recording'); // remove pulse after recording
+      recordButton.classList.remove('recording');
     }, 6000);
 
   } catch (err) {
     console.error('Mic error:', err);
     spinner.style.display = 'none';
-    recordButton.classList.remove('disabled', 'processing');
+    recordButton.classList.remove('disabled');
     responseText.textContent = '❌ Mic not available or permission denied.';
   }
 });
